@@ -18,7 +18,7 @@ class Ui_MainWindow(object):
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.tableWidget = QtWidgets.QTableWidget(self.centralwidget)
-        self.tableWidget.setGeometry(QtCore.QRect(40, 30, 521, 211))
+        self.tableWidget.setGeometry(QtCore.QRect(40, 30, 535, 235))
         self.tableWidget.setRowCount(6)
         self.tableWidget.setColumnCount(5)
         self.tableWidget.setObjectName("tableWidget")
@@ -53,6 +53,8 @@ class Ui_MainWindow(object):
         # Подключаем функции к кнопкам
         self.pushButton.clicked.connect(self.load_data)
         self.Append.clicked.connect(self.add_row)
+        self.Edit.clicked.connect(self.edit_data)
+        self.Delete.clicked.connect(self.delete_row)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -85,13 +87,35 @@ class Ui_MainWindow(object):
         row_count = self.tableWidget.rowCount()
         self.tableWidget.insertRow(row_count)
 
+    def edit_data(self):
+        """Сохраняет изменения в таблице в файл apartments.txt."""
+        rows = self.tableWidget.rowCount()
+        with open("apartments.txt", "w", encoding='utf-8') as file:
+            for row in range(rows):
+                # Проверяем, была ли добавлена новая строка
+                if self.tableWidget.item(row, 0) is not None:
+                    street = self.tableWidget.item(row, 0).text()
+                    house_number = self.tableWidget.item(row, 1).text()
+                    floor = self.tableWidget.item(row, 2).text()
+                    rooms = self.tableWidget.item(row, 3).text()
+                    price = self.tableWidget.item(row, 4).text()
+                    file.write(f"{street},{house_number},{floor},{rooms},{price}\n")
+
+    def delete_row(self):
+        """Удаляет выбранную строку из таблицы."""
+        # Получаем индекс выбранной строки
+        selected_row = self.tableWidget.currentRow()
+
+        # Проверяем, выбрана ли строка
+        if selected_row != -1:
+            # Удаляем строку из таблицы
+            self.tableWidget.removeRow(selected_row)
 
 if __name__ == "__main__":
-    import sys
-
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec_())
+     import sys
+     app = QtWidgets.QApplication(sys.argv)
+     MainWindow = QtWidgets.QMainWindow()
+     ui = Ui_MainWindow()
+     ui.setupUi(MainWindow)
+     MainWindow.show()
+     sys.exit(app.exec_())
