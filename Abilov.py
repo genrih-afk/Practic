@@ -9,86 +9,89 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from functions import read_apartments_from_file  # Импорт функции из functions.py
 
 
-class Ui_Dialog(object):
-    def setupUi(self, Dialog):
-        Dialog.setObjectName("Dialog")
-        Dialog.resize(784, 526)
-        self.tableWidget = QtWidgets.QTableWidget(Dialog)
-        self.tableWidget.setGeometry(QtCore.QRect(50, 40, 521, 211))
+class Ui_MainWindow(object):
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.resize(634, 340)
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        self.tableWidget = QtWidgets.QTableWidget(self.centralwidget)
+        self.tableWidget.setGeometry(QtCore.QRect(40, 30, 521, 211))
         self.tableWidget.setRowCount(6)
         self.tableWidget.setColumnCount(5)
         self.tableWidget.setObjectName("tableWidget")
-        self.pushButton = QtWidgets.QPushButton(Dialog)
-        self.pushButton.setGeometry(QtCore.QRect(60, 300, 111, 51))
-        self.pushButton.setObjectName("pushButton")
 
         # Добавляем заголовки столбцов
-        self.tableWidget.setHorizontalHeaderLabels(
-            ["Улица", "№ дома", "№ квартиры", "Кол-во комнат", "Этаж"]
-        )
+        self.tableWidget.setHorizontalHeaderLabels(["Улица", "Номер дома", "Этаж", "Количество комнат", "Цена"])
 
-        self.retranslateUi(Dialog)
-        QtCore.QMetaObject.connectSlotsByName(Dialog)
+        self.widget = QtWidgets.QWidget(self.centralwidget)
+        self.widget.setGeometry(QtCore.QRect(60, 270, 486, 25))
+        self.widget.setObjectName("widget")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.widget)
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout.setSpacing(30)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.pushButton = QtWidgets.QPushButton(self.widget)
+        self.pushButton.setObjectName("pushButton")
+        self.horizontalLayout.addWidget(self.pushButton)
+        self.Append = QtWidgets.QPushButton(self.widget)
+        self.Append.setObjectName("Append")
+        self.horizontalLayout.addWidget(self.Append)
+        self.Edit = QtWidgets.QPushButton(self.widget)
+        self.Edit.setObjectName("Edit")
+        self.horizontalLayout.addWidget(self.Edit)
+        self.Delete = QtWidgets.QPushButton(self.widget)
+        self.Delete.setObjectName("Delete")
+        self.horizontalLayout.addWidget(self.Delete)
+        MainWindow.setCentralWidget(self.centralwidget)
 
-        # Подключение сигнала нажатия кнопки к слоту
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+        # Подключаем функции к кнопкам
         self.pushButton.clicked.connect(self.load_data)
+        self.Append.clicked.connect(self.add_row)
 
-    def retranslateUi(self, Dialog):
+    def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
-        self.pushButton.setText(_translate("Dialog", "Загрузить данные"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.pushButton.setText(_translate("MainWindow", "Загрузить данные"))
+        self.Append.setText(_translate("MainWindow", "Добавить данные"))
+        self.Edit.setText(_translate("MainWindow", "Изменить данные"))
+        self.Delete.setText(_translate("MainWindow", "Удалить данные"))
 
     def load_data(self):
-        # Получаем данные из файла
-        apartments = read_apartments_from_file("apartments.txt")
+        """Загружает данные из файла apartments.txt в таблицу."""
+        with open("apartments.txt", "r", encoding='utf-8') as file:
+            data = file.readlines()
 
         # Очищаем таблицу
         self.tableWidget.setRowCount(0)
 
-        # Заполняем таблицу
-        for street_name, houses in apartments.items():
-            for apartment in houses:
-                row_index = self.tableWidget.rowCount()
-                self.tableWidget.insertRow(row_index)
-                self.tableWidget.setItem(row_index, 0, QtWidgets.QTableWidgetItem(street_name))
-                self.tableWidget.setItem(row_index, 1, QtWidgets.QTableWidgetItem(apartment["house_number"]))
-                self.tableWidget.setItem(row_index, 2, QtWidgets.QTableWidgetItem(str(apartment["apartment_number"])))
-                self.tableWidget.setItem(row_index, 3, QtWidgets.QTableWidgetItem(str(apartment["rooms"])))
-                self.tableWidget.setItem(row_index, 4, QtWidgets.QTableWidgetItem(str(apartment["floor"])))
+        # Добавляем данные в таблицу
+        for row, line in enumerate(data):
+            # Разделяем строку на элементы
+            elements = line.strip().split(",")
+            self.tableWidget.insertRow(row)
 
-    # ... ваш существующий код ...
+            # Вставляем элементы в столбцы
+            for col, element in enumerate(elements):
+                self.tableWidget.setItem(row, col, QtWidgets.QTableWidgetItem(element))
 
-    def read_apartments_from_file(filename):
-        apartments = {}
-        with open(filename, "r", encoding="utf-8") as file:
-            for line in file:
-                # Убираем лишние пробелы и разделяем по запятой
-                parts = line.strip().split(",")
-                if len(parts) == 5:  # Проверяем, что строка имеет 5 элементов
-                    street, house_number, apartment_number, rooms, floor = parts
-                    if street not in apartments:
-                        apartments[street] = []
-                    apartments[street].append(
-                        {
-                            "house_number": house_number,
-                            "apartment_number": int(apartment_number),
-                            "rooms": int(rooms),
-                            "floor": int(floor),
-                        }
-                    )
-        return apartments
-
-    # ... ваш существующий код ...
+    def add_row(self):
+        """Добавляет новую строку в таблицу."""
+        row_count = self.tableWidget.rowCount()
+        self.tableWidget.insertRow(row_count)
 
 
 if __name__ == "__main__":
     import sys
+
     app = QtWidgets.QApplication(sys.argv)
-    Dialog = QtWidgets.QDialog()
-    ui = Ui_Dialog()
-    ui.setupUi(Dialog)
-    Dialog.show()
+    MainWindow = QtWidgets.QMainWindow()
+    ui = Ui_MainWindow()
+    ui.setupUi(MainWindow)
+    MainWindow.show()
     sys.exit(app.exec_())
